@@ -1,5 +1,5 @@
 from django.urls import path
-from .views.product_views import product_list, product_create, get_product, update_product, delete_product
+from .views.products_views import product_list, product_create, get_product, update_product, delete_product
 from .views.orders_view import list_orders, create_order
 from .views.auth_view import ObtainTokenView, RevokeTokenView
 
