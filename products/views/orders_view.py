@@ -76,7 +76,7 @@ def create_order(request):
         product.quantity -= data['quantity']
         product.save()
 
-        return JsonResponse(model_to_dict(order), status=201)
+        return JsonResponse(model_to_dict(order), status=200)
 
     except KeyError as e:
         return JsonResponse({'error': f'Missing field: {str(e)}'}, status=400)

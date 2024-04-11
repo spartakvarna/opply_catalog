@@ -28,7 +28,7 @@ class OrderViewTests(TestCase):
         response = self.client.post(reverse('create_order'),
                                     data=json.dumps(order_data),
                                     content_type='application/json')
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 200)
 
         self.assertEqual(Order.objects.count(), 1)
         self.product.refresh_from_db()

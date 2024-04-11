@@ -32,7 +32,7 @@ def product_create(request):
       - name (str): Name of the product.
       - price (float): Price of the product.
       - quantity (int): Available quantity of the product.
-    - Possible response HTTP codes: 201 (Created)
+    - Possible response HTTP codes: 200 (Created)
 
     curl -X POST http://127.0.0.1:8000/catalog/products/create/ \
     -H "Content-Type: application/json" \
@@ -50,7 +50,7 @@ def product_create(request):
 
         product = product_service.create(name, price, quantity)
 
-        return JsonResponse(model_to_dict(product), status=201)
+        return JsonResponse(model_to_dict(product), status=200)
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON format'}, status=400)
 
@@ -97,10 +97,10 @@ def delete_product(request, pk):
     """Delete a product.
 
     - URL parameters: pk (int) - The primary key of the product to delete.
-    - Possible response HTTP codes: 204 (No Content), 404 (Not Found)
+    - Possible response HTTP codes: 200 (No Content), 404 (Not Found)
 
     curl -X DELETE http://127.0.0.1:8000/catalog/products/1/delete/
     """
     product_service.delete(pk)
-    return HttpResponse(status=204)
+    return HttpResponse(status=200)
 

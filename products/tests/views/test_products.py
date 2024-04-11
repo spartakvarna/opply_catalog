@@ -14,7 +14,7 @@ class ProductViewTests(TestCase):
 
     def test_product_create_view_success(self):
         response = self.client.post(reverse('product_create'), {'name': 'New Product', 'price': 20.00, 'quantity': 10}, content_type='application/json')
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 200)
 
     def test_get_product_view_success(self):
         response = self.client.get(reverse('get_product', args=[self.product.pk]))
@@ -26,4 +26,4 @@ class ProductViewTests(TestCase):
 
     def test_delete_product_view_success(self):
         response = self.client.delete(reverse('delete_product', args=[self.product.pk]))
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 200)
