@@ -134,3 +134,79 @@ def delete_product(request, pk):
     else:
         return HttpResponse(status=200)
 
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def soft_delete_product(request, pk):
+    """
+    Soft delete a product by setting its deleted_at timestamp.
+
+    - URL parameters: pk (int) - The primary key of the product to soft delete.
+    - Request parameters: None
+    - Possible response HTTP codes: 200 (OK), 404 (Not Found)
+
+    curl -X POST http://127.0.0.1:8000/catalog/products/<pk>/soft_delete/
+    """
+    result = product_service.soft_delete(pk)
+    if result:
+        return HttpResponse(status=200)
+    else:
+        return HttpResponseNotFound('Product not found')
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def enable_product(request, pk):
+    """
+    Enable a product, making it active.
+
+    - URL parameters: pk (int) - The primary key of the product to enable.
+    - Request parameters: None
+    - Possible response HTTP codes: 200 (OK), 404 (Not Found)
+
+    curl -X POST http://127.0.0.1:8000/catalog/products/<pk>/enable/
+    """
+    result = product_service.enable(pk)
+    if result:
+        return HttpResponse(status=200)
+    else:
+        return HttpResponseNotFound('Product not found')
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def disable_product(request, pk):
+    """
+    Disable a product, making it inactive.
+
+    - URL parameters: pk (int) - The primary key of the product to disable.
+    - Request parameters: None
+    - Possible response HTTP codes: 200 (OK), 404 (Not Found)
+
+    curl -X POST http://127.0.0.1:8000/catalog/products/<pk>/disable/
+    """
+    result = product_service.disable(pk)
+    if result:
+        return HttpResponse(status=200)
+    else:
+        return HttpResponseNotFound('Product not found')
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def toggle_product_enabled(request, pk):
+    """
+    Toggle the enabled state of a product.
+
+    - URL parameters: pk (int) - The primary key of the product whose enabled state is to be toggled.
+    - Request parameters: None
+    - Possible response HTTP codes: 200 (OK), 404 (Not Found)
+
+    curl -X POST http://127.0.0.1:8000/catalog/products/<pk>/toggle_enabled/
+    """
+    result = product_service.toggle_enabled(pk)
+    if result:
+        return HttpResponse(status=200)
+    else:
+        return HttpResponseNotFound('Product not found')
+

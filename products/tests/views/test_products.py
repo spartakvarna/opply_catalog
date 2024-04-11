@@ -55,3 +55,42 @@ class ProductViewTests(TestCase):
     def test_delete_product_view_not_found(self):
         response = self.client.delete(reverse('delete_product', args=[9999]))  # Assuming ID 9999 does not exist
         self.assertEqual(response.status_code, 404)
+
+    def test_soft_delete_product_success(self):
+        self.client.post(reverse('soft_delete_product', args=[self.product.pk]))
+        product = Product.objects.get(pk=self.product.pk)
+        self.assertIsNotNone(product.deleted_at)
+
+    def test_soft_delete_product_not_found(self):
+        response = self.client.post(reverse('soft_delete_product', args=[9999]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_enable_product_success(self):
+        self.product.is_active = False
+        self.product.save()
+        response = self.client.post(reverse('enable_product', args=[self.product.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(Product.objects.get(pk=self.product.pk).is_active)
+
+    def test_enable_product_not_found(self):
+        response = self.client.post(reverse('enable_product', args=[9999]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_disable_product_success(self):
+        response = self.client.post(reverse('disable_product', args=[self.product.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Product.objects.get(pk=self.product.pk).is_active)
+
+    def test_disable_product_not_found(self):
+        response = self.client.post(reverse('disable_product', args=[9999]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_toggle_product_enabled_success(self):
+        initial_state = self.product.is_active
+        response = self.client.post(reverse('toggle_product_enabled', args=[self.product.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotEqual(Product.objects.get(pk=self.product.pk).is_active, initial_state)
+
+    def test_toggle_product_enabled_not_found(self):
+        response = self.client.post(reverse('toggle_product_enabled', args=[9999]))
+        self.assertEqual(response.status_code, 404)

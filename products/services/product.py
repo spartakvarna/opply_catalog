@@ -1,15 +1,16 @@
-from ..models import Product
+from django.utils import timezone
 from django.core.paginator import Paginator
-from django.shortcuts import get_object_or_404
 from django.forms.models import model_to_dict
+
+from ..models import Product
 
 
 def get_all(page_number):
-    """Get all products of a specific page or the first page if page_number is None.
+    """Get all active and not soft-deleted products of a specific page or the first page if page_number is None.
 
     Each page has 10 rows.
     """
-    products = Product.objects.all().order_by('name')
+    products = Product.objects.filter(deleted_at__isnull=True, is_active=True).order_by('name')
     paginator = Paginator(products, 10)
     page_obj = paginator.get_page(page_number)
     products_list = [model_to_dict(product) for product in page_obj]
@@ -79,3 +80,63 @@ def delete(pk):
         return True
     except Product.DoesNotExist:
         return None
+
+
+def soft_delete(pk):
+    """Soft delete a product by setting its deleted_at timestamp.
+
+    Returns:
+        True if successful, False if Product does not exist.
+    """
+    try:
+        product = Product.objects.get(pk=pk)
+        product.deleted_at = timezone.now()
+        product.save()
+        return True
+    except Product.DoesNotExist:
+        return False
+
+
+def enable(pk):
+    """Enable a product.
+
+    Returns:
+        True if successful, False if Product does not exist.
+    """
+    try:
+        product = Product.objects.get(pk=pk)
+        product.is_active = True
+        product.save()
+        return True
+    except Product.DoesNotExist:
+        return False
+
+
+def disable(pk):
+    """Disable a product.
+
+    Returns:
+        True if successful, False if Product does not exist.
+    """
+    try:
+        product = Product.objects.get(pk=pk)
+        product.is_active = False
+        product.save()
+        return True
+    except Product.DoesNotExist:
+        return False
+
+
+def toggle_enabled(pk):
+    """Toggle the enabled state of a product.
+
+    Returns:
+        True if successful, False if Product does not exist.
+    """
+    try:
+        product = Product.objects.get(pk=pk)
+        product.is_active = not product.is_active
+        product.save()
+        return True
+    except Product.DoesNotExist:
+        return False
