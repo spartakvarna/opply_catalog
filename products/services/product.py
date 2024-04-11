@@ -24,10 +24,12 @@ def get_all(page_number):
 
 
 def create(name, price, quantity):
+    """Create Product."""
     return Product.objects.create(name=name, price=price, quantity=quantity)
 
 
 def retrieve(pk):
+    """Get Product by id or None if such does not exist."""
     try:
         product = Product.objects.get(pk=pk)
         return model_to_dict(product)
@@ -36,6 +38,7 @@ def retrieve(pk):
 
 
 def get_by_name(name):
+    """Get Product by name or None if such does not exist."""
     try:
         product = Product.objects.get(name=name)
         return product
@@ -44,6 +47,10 @@ def get_by_name(name):
 
 
 def update(pk, name=None, price=None, quantity=None):
+    """Update Product fields.
+
+    Updates for the values name, price, quantity which are not None.
+    """
     try:
         product = Product.objects.get(pk=pk)
 
@@ -61,7 +68,12 @@ def update(pk, name=None, price=None, quantity=None):
 
 
 def delete(pk):
+    """Delete Product from table.
+
+    Cascadingly removes order (currently wrong).
+    TODO: Implement soft delete"""
     try:
+        # TODO: Implement soft delete
         product = Product.objects.get(pk=pk)
         product.delete()
         return True

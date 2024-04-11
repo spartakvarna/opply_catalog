@@ -31,7 +31,7 @@ def product_create(request):
       - name (str, required): Name of the product.
       - price (float, required): Price of the product.
       - quantity (int, required): Available quantity of the product.
-    - Possible response HTTP codes: 200 (Created), 500(Internal Error)
+    - Possible response HTTP codes: 200 (Created), 400 (Bad Request), 500(Internal Error)
 
     curl -X POST http://127.0.0.1:8000/catalog/products/create/ \
     -H "Content-Type: application/json" \
@@ -84,7 +84,7 @@ def update_product(request, pk):
       - name (str, optional): New name of the product.
       - price (float, optional): New price of the product.
       - quantity (int, optional): New available quantity of the product.
-    - Possible response HTTP codes: 200 (OK), 404 (Not Found)
+    - Possible response HTTP codes: 200 (OK), 400 (Bad Request), 404 (Not Found)
 
     curl -X PUT http://127.0.0.1:8000/catalog/products/1/update/ \
     -H "Content-Type: application/json" \
@@ -105,6 +105,8 @@ def update_product(request, pk):
         return HttpResponseBadRequest('Price cannot be negative')
     if quantity is not None and quantity < 0:
         return HttpResponseBadRequest('Quantity cannot be negative')
+    if product_service.get_by_name(name) is not None:
+        return JsonResponse({'error': 'Product with this name already exists'}, status=400)
 
     updated_product_data = product_service.update(pk, name, price, quantity)
     if updated_product_data is None:
