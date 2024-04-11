@@ -50,6 +50,11 @@ def product_create(request):
         if product_service.get_by_name(name) is not None:
             return JsonResponse({'error': 'Product with this name already exists'}, status=400)
 
+        if price is not None and price < 0:
+            return HttpResponseBadRequest('Price cannot be negative')
+        if quantity is not None and quantity < 0:
+            return HttpResponseBadRequest('Quantity cannot be negative')
+
         product = product_service.create(name, price, quantity)
 
         return JsonResponse(model_to_dict(product), status=200)
@@ -90,7 +95,6 @@ def update_product(request, pk):
     -H "Content-Type: application/json" \
     -d '{"name": "Updated Product Name", "price": 25.99, "quantity": 95}'
     """
-
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
@@ -100,7 +104,6 @@ def update_product(request, pk):
     price = data.get('price')
     quantity = data.get('quantity')
 
-    # Validate price and quantity for negative values
     if price is not None and price < 0:
         return HttpResponseBadRequest('Price cannot be negative')
     if quantity is not None and quantity < 0:
