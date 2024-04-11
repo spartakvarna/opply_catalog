@@ -1,4 +1,4 @@
-from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
+from django.http import JsonResponse, HttpResponse, HttpResponseNotFound, HttpResponseBadRequest
 from django.views.decorators.http import require_http_methods
 from django.forms.models import model_to_dict
 import json
@@ -91,9 +91,22 @@ def update_product(request, pk):
     -d '{"name": "Updated Product Name", "price": 25.99, "quantity": 95}'
     """
 
-    data = json.loads(request.body)
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return HttpResponseBadRequest('Invalid JSON format')
 
-    updated_product_data = product_service.update(pk, data)
+    name = data.get('name')
+    price = data.get('price')
+    quantity = data.get('quantity')
+
+    # Validate price and quantity for negative values
+    if price is not None and price < 0:
+        return HttpResponseBadRequest('Price cannot be negative')
+    if quantity is not None and quantity < 0:
+        return HttpResponseBadRequest('Quantity cannot be negative')
+
+    updated_product_data = product_service.update(pk, name, price, quantity)
     if updated_product_data is None:
         return HttpResponseNotFound('Product not found')
 

@@ -43,11 +43,17 @@ def get_by_name(name):
         return None
 
 
-def update(pk, data):
+def update(pk, name=None, price=None, quantity=None):
     try:
         product = Product.objects.get(pk=pk)
-        for field, value in data.items():
-            setattr(product, field, value)
+
+        if name is not None:
+            product.name = name
+        if price is not None:
+            product.price = price
+        if quantity is not None:
+            product.quantity = quantity
+
         product.save()
         return model_to_dict(product)
     except Product.DoesNotExist:
