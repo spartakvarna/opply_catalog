@@ -20,7 +20,7 @@ def product_list(request):
     """
 
     page_number = request.GET.get('page')
-    result = product_service.list_products(page_number)
+    result = product_service.list(page_number)
     return JsonResponse(result)
 
 @csrf_exempt
@@ -48,7 +48,7 @@ def product_create(request):
         if name is None or price is None or quantity is None:
             return JsonResponse({'error': 'Missing required parameters'}, status=400)
 
-        product = product_service.create_product(name, price, quantity)
+        product = product_service.create(name, price, quantity)
 
         return JsonResponse(model_to_dict(product), status=201)
     except json.JSONDecodeError:
@@ -65,7 +65,7 @@ def get_product(request, pk):
     curl -X GET http://127.0.0.1:8000/catalog/products/1/
     """
 
-    product_data = product_service.retrieve_product(pk)
+    product_data = product_service.retrieve(pk)
     return JsonResponse(product_data)
 
 
@@ -87,7 +87,7 @@ def update_product(request, pk):
     """
 
     data = json.loads(request.body)
-    updated_product_data = product_service.update_product(pk, data)
+    updated_product_data = product_service.update(pk, data)
     return JsonResponse(updated_product_data)
 
 
@@ -101,6 +101,6 @@ def delete_product(request, pk):
 
     curl -X DELETE http://127.0.0.1:8000/catalog/products/1/delete/
     """
-    product_service.delete_product(pk)
+    product_service.delete(pk)
     return HttpResponse(status=204)
 

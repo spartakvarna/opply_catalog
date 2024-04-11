@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from django.forms.models import model_to_dict
 
 
-def list_products(page_number):
+def list(page_number):
     products = Product.objects.all().order_by('name')
     paginator = Paginator(products, 10)
     page_obj = paginator.get_page(page_number)
@@ -19,16 +19,16 @@ def list_products(page_number):
     }
 
 
-def create_product(name, price, quantity):
+def create(name, price, quantity):
     return Product.objects.create(name=name, price=price, quantity=quantity)
 
 
-def retrieve_product(pk):
+def retrieve(pk):
     product = get_object_or_404(Product, pk=pk)
     return model_to_dict(product)
 
 
-def update_product(pk, data):
+def update(pk, data):
     product = get_object_or_404(Product, pk=pk)
     for field, value in data.items():
         setattr(product, field, value)
@@ -36,7 +36,7 @@ def update_product(pk, data):
     return model_to_dict(product)
 
 
-def delete_product(pk):
+def delete(pk):
     # TODO: This should be soft deleted
     product = get_object_or_404(Product, pk=pk)
     product.delete()
