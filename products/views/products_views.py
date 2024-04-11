@@ -28,9 +28,9 @@ def product_create(request):
     """Create a new product.
 
     - Request parameters (JSON body):
-      - name (str): Name of the product.
-      - price (float): Price of the product.
-      - quantity (int): Available quantity of the product.
+      - name (str, required): Name of the product.
+      - price (float, required): Price of the product.
+      - quantity (int, required): Available quantity of the product.
     - Possible response HTTP codes: 200 (Created), 500(Internal Error)
 
     curl -X POST http://127.0.0.1:8000/catalog/products/create/ \
