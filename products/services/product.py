@@ -4,7 +4,11 @@ from django.shortcuts import get_object_or_404
 from django.forms.models import model_to_dict
 
 
-def list(page_number):
+def get_all(page_number):
+    """Get all products of a specific page or the first page if page_number is None.
+
+    Each page has 10 rows.
+    """
     products = Product.objects.all().order_by('name')
     paginator = Paginator(products, 10)
     page_obj = paginator.get_page(page_number)
@@ -24,19 +28,36 @@ def create(name, price, quantity):
 
 
 def retrieve(pk):
-    product = get_object_or_404(Product, pk=pk)
-    return model_to_dict(product)
+    try:
+        product = Product.objects.get(pk=pk)
+        return model_to_dict(product)
+    except Product.DoesNotExist:
+        return None
+
+
+def get_by_name(name):
+    try:
+        product = Product.objects.get(name=name)
+        return product
+    except Product.DoesNotExist:
+        return None
 
 
 def update(pk, data):
-    product = get_object_or_404(Product, pk=pk)
-    for field, value in data.items():
-        setattr(product, field, value)
-    product.save()
-    return model_to_dict(product)
+    try:
+        product = Product.objects.get(pk=pk)
+        for field, value in data.items():
+            setattr(product, field, value)
+        product.save()
+        return model_to_dict(product)
+    except Product.DoesNotExist:
+        return None
 
 
 def delete(pk):
-    # TODO: This should be soft deleted
-    product = get_object_or_404(Product, pk=pk)
-    product.delete()
+    try:
+        product = Product.objects.get(pk=pk)
+        product.delete()
+        return True
+    except Product.DoesNotExist:
+        return None

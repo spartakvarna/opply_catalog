@@ -1,10 +1,9 @@
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
 from django.views.decorators.http import require_http_methods
 from django.forms.models import model_to_dict
 import json
 from django.views.decorators.csrf import csrf_exempt
 from ..services import product as product_service
-
 
 
 @csrf_exempt
@@ -13,14 +12,14 @@ def product_list(request):
     """List all products.
 
     - Request parameters: None
-    - Query parameters: page (int, optional) - Page number for pagination.
-    - Possible response HTTP codes: 200 (OK)
+    - Query parameters: page (int, optional) - Page number for pagination or first page if missing.
+    - Possible response HTTP codes: 200 (OK), 500(Internal Error)
 
     curl -X GET http://127.0.0.1:8000/catalog/products/
     """
 
     page_number = request.GET.get('page')
-    result = product_service.list(page_number)
+    result = product_service.get_all(page_number)
     return JsonResponse(result)
 
 @csrf_exempt
@@ -32,7 +31,7 @@ def product_create(request):
       - name (str): Name of the product.
       - price (float): Price of the product.
       - quantity (int): Available quantity of the product.
-    - Possible response HTTP codes: 200 (Created)
+    - Possible response HTTP codes: 200 (Created), 500(Internal Error)
 
     curl -X POST http://127.0.0.1:8000/catalog/products/create/ \
     -H "Content-Type: application/json" \
@@ -47,6 +46,9 @@ def product_create(request):
 
         if name is None or price is None or quantity is None:
             return JsonResponse({'error': 'Missing required parameters'}, status=400)
+
+        if product_service.get_by_name(name) is not None:
+            return JsonResponse({'error': 'Product with this name already exists'}, status=400)
 
         product = product_service.create(name, price, quantity)
 
@@ -66,6 +68,9 @@ def get_product(request, pk):
     """
 
     product_data = product_service.retrieve(pk)
+    if product_data is None:
+        return HttpResponseNotFound('Product not found')
+
     return JsonResponse(product_data)
 
 
@@ -87,8 +92,12 @@ def update_product(request, pk):
     """
 
     data = json.loads(request.body)
+
     updated_product_data = product_service.update(pk, data)
-    return JsonResponse(updated_product_data)
+    if updated_product_data is None:
+        return HttpResponseNotFound('Product not found')
+
+    return JsonResponse(updated_product_data, status=200)
 
 
 @csrf_exempt
@@ -101,6 +110,9 @@ def delete_product(request, pk):
 
     curl -X DELETE http://127.0.0.1:8000/catalog/products/1/delete/
     """
-    product_service.delete(pk)
-    return HttpResponse(status=200)
+    result = product_service.delete(pk)
+    if result is None:
+        return HttpResponseNotFound('Product not found')
+    else:
+        return HttpResponse(status=200)
 
