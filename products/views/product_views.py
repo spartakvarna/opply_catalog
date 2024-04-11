@@ -1,11 +1,10 @@
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_http_methods
 from django.forms.models import model_to_dict
-from ..models import Product
-from django.core.paginator import Paginator
-from django.shortcuts import get_object_or_404
 import json
 from django.views.decorators.csrf import csrf_exempt
+from ..services import product as product_service
+
 
 
 @csrf_exempt
@@ -20,16 +19,9 @@ def product_list(request):
     curl -X GET http://127.0.0.1:8000/catalog/products/
     """
 
-    products = Product.objects.all().order_by('name')
-    paginator = Paginator(products, 10)
     page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    products_list = [model_to_dict(product) for product in page_obj]
-    return JsonResponse({'products': products_list, 'page_info': {
-        'number': page_obj.number,
-        'has_next': page_obj.has_next(),
-        'has_previous': page_obj.has_previous(),
-    }})
+    result = product_service.list_products(page_number)
+    return JsonResponse(result)
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -47,9 +39,20 @@ def product_create(request):
     -d '{"name": "New Product", "price": 19.99, "quantity": 100}'
     """
 
-    data = json.loads(request.body)
-    product = Product.objects.create(**data)
-    return JsonResponse(model_to_dict(product), status=201)
+    try:
+        data = json.loads(request.body)
+        name = data.get('name')
+        price = data.get('price')
+        quantity = data.get('quantity')
+
+        if name is None or price is None or quantity is None:
+            return JsonResponse({'error': 'Missing required parameters'}, status=400)
+
+        product = product_service.create_product(name, price, quantity)
+
+        return JsonResponse(model_to_dict(product), status=201)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON format'}, status=400)
 
 @csrf_exempt
 @require_http_methods(["GET"])
@@ -62,8 +65,9 @@ def get_product(request, pk):
     curl -X GET http://127.0.0.1:8000/catalog/products/1/
     """
 
-    product = get_object_or_404(Product, pk=pk)
-    return JsonResponse(model_to_dict(product))
+    product_data = product_service.retrieve_product(pk)
+    return JsonResponse(product_data)
+
 
 @csrf_exempt
 @require_http_methods(["PUT"])
@@ -82,12 +86,10 @@ def update_product(request, pk):
     -d '{"name": "Updated Product Name", "price": 25.99, "quantity": 95}'
     """
 
-    product = get_object_or_404(Product, pk=pk)
     data = json.loads(request.body)
-    for field, value in data.items():
-        setattr(product, field, value)
-    product.save()
-    return JsonResponse(model_to_dict(product))
+    updated_product_data = product_service.update_product(pk, data)
+    return JsonResponse(updated_product_data)
+
 
 @csrf_exempt
 @require_http_methods(["DELETE"])
@@ -99,8 +101,6 @@ def delete_product(request, pk):
 
     curl -X DELETE http://127.0.0.1:8000/catalog/products/1/delete/
     """
-    product = get_object_or_404(Product, pk=pk)
-    # TODO: This should be soft deleted
-    product.delete()
+    product_service.delete_product(pk)
     return HttpResponse(status=204)
 
