@@ -100,6 +100,7 @@ def delete_product(request, pk):
     curl -X DELETE http://127.0.0.1:8000/catalog/products/1/delete/
     """
     product = get_object_or_404(Product, pk=pk)
+    # TODO: This should be soft deleted
     product.delete()
     return HttpResponse(status=204)
 
